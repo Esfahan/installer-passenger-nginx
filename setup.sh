@@ -1,4 +1,5 @@
 #!/bin/bash
+# https://www.phusionpassenger.com/library/install/nginx/install/oss/rubygems_rvm/
 RUBY_VER=2.3.3
 
 source ~/.bash_profile
@@ -42,10 +43,20 @@ else
 fi
 
 # passenger
-rbenv sudo gem install passenger --no-rdoc --no-ri
+if [ `passenger-config --version > /dev/null 2>&1; echo $?` != 0 ]; then
+  rbenv sudo gem install passenger --no-rdoc --no-ri
+else
+  echo 'passenger is already installed.(skipping...)'
+fi
 
 # nginx
-sudo yum install -y libcurl-devel
-rbenv sudo passenger-install-nginx-module --auto
+if [ `/opt/nginx/sbin/nginx -v  > /dev/null 2>&1; echo $?` != 0 ]; then
+  sudo yum install -y libcurl-devel
+  rbenv sudo passenger-install-nginx-module --auto
 
-passenger-config --version
+  # start nginx
+  sudo /opt/nginx/sbin/nginx
+else
+  echo 'nginx is already installed.(skipping...)'
+  sudo /opt/nginx/sbin/nginx -s reload
+fi
